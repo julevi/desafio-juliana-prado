@@ -33,7 +33,13 @@ class CaixaDaLanchonete {
             descricao: "1 Café e 1 Sanduíche",
             valor: 7.50,
         },
-    }
+    };
+
+    formaDePagamento = {
+        "debito": 1.00,
+        "credito": 1.03,
+        "debito": 0.95,
+    };
 
     calcularValorDaCompra(metodoDePagamento, itens) {
         return "";
