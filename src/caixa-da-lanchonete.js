@@ -88,17 +88,49 @@ class CaixaDaLanchonete {
         return null;
     }
 
-    naoExisteFormaDePagamento(formaDePagamento){
+    naoExisteFormaDePagamento(formaDePagamento) {
         if (!this.formaDePagamento.hasOwnProperty(formaDePagamento)) {
             return "Forma de pagamento inválida!";
         }
         return null;
     }
-    
+
 
     calcularValorDaCompra(metodoDePagamento, itens) {
-        return "";
+        const verificaItensPrincipais = this.verificarItensPrincipais(itens);
+        const naoExisteItens = this.naoExisteItens(itens);
+        const itemPedidoIgualAZero = this.itemPedidoIgualAZero(itens);
+
+        if (verificaItensPrincipais) {
+            return verificaItensPrincipais;
+        }
+
+        if (naoExisteItens) {
+            return naoExisteItens;
+        }
+
+        if (itemPedidoIgualAZero) {
+            return itemPedidoIgualAZero;
+        }
+
+        let valorTotal = 0;
+
+        for (const item of itens) {
+            const [codigo, quantidade] = item.split(',');
+
+            if (this.codigoNaoExiste(codigo)) {
+                return this.codigoNaoExiste(codigo);
+            }
+
+            valorTotal += this.cardapioDaLanchonete[codigo].valor * parseInt(quantidade);
+        }
+
+        const descontoValor = this.desconto(valorTotal, metodoDePagamento);
+        valorTotal -= descontoValor;
+
+        return valorTotal.toFixed(2);
     }
 }
+
 
 export { CaixaDaLanchonete };
