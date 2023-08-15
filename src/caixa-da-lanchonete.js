@@ -41,24 +41,47 @@ class CaixaDaLanchonete {
         "dinheiro": true,
     };
 
-    desconto(valor, formaDePagamento) {
-        if (formaDePagamento === "dinheiro" || formaDePagamento === "debito") {
-            return valor * 0.05;
-        } else if (formaDePagamento === "credito") {
-            return valor * 0.03;
-        } else {
-            return 0;
-        }
-    }
-
     verificarItensPrincipais(itens) {
+        let temCafe = false;
+        let temSanduiche = false;
+        
         for (const item of itens) {
-            const [codigo, _] = item.split(',');
+            const [codigo] = item.split(',');
+    
+            if (codigo === "cafe") {
+                temCafe = true;
+                break;
+            }
+        }
 
-            if ((codigo === "queijo" && !itens.includes("sanduiche")) ||
-                (codigo === "chantily" && !itens.includes("cafe"))) {
+        for (const item of itens) {
+            const [codigo] = item.split(',');
+    
+            if (codigo === "sanduiche") {
+                temSanduiche = true;
+                break;
+            }
+        }
+        
+        for (const item of itens) {
+            const [codigo] = item.split(',');
+    
+            if (codigo === "queijo" && !temSanduiche) {
                 return "Item extra não pode ser pedido sem o principal";
             }
+
+            if (codigo === "chantily" && !temCafe) {
+                return "Item extra não pode ser pedido sem o principal";
+            }
+
+        }
+    
+        return null;
+    }
+    
+    verificarFormaDePagamento(formaDePagamento) {
+        if (!this.formaDePagamento[formaDePagamento]) {
+            return "Forma de pagamento inválida!";
         }
         return null;
     }
@@ -67,7 +90,6 @@ class CaixaDaLanchonete {
         if (itens.length === 0) {
             return "Não há itens no carrinho de compra!";
         }
-        return null;
     }
 
     itemPedidoIgualAZero(itens) {
@@ -85,24 +107,25 @@ class CaixaDaLanchonete {
         if (!this.cardapioDaLanchonete.hasOwnProperty(codigo)) {
             return "Item inválido!";
         }
-        return null;
     }
 
-    naoExisteFormaDePagamento(formaDePagamento) {
-        if (!this.formaDePagamento.hasOwnProperty(formaDePagamento)) {
-            return "Forma de pagamento inválida!";
-        }
-        return null;
+    formatarValorMonetario(valor) {
+        return valor.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
 
-
-    calcularValorDaCompra(metodoDePagamento, itens) {
+    calcularValorDaCompra(formaDePagamento, itens) {
         const verificaItensPrincipais = this.verificarItensPrincipais(itens);
         const naoExisteItens = this.naoExisteItens(itens);
         const itemPedidoIgualAZero = this.itemPedidoIgualAZero(itens);
+        const verificarFormaDePagamento = this.verificarFormaDePagamento(formaDePagamento);
+
 
         if (verificaItensPrincipais) {
             return verificaItensPrincipais;
+        }
+
+        if (verificarFormaDePagamento) {
+            return verificarFormaDePagamento;
         }
 
         if (naoExisteItens) {
@@ -112,6 +135,8 @@ class CaixaDaLanchonete {
         if (itemPedidoIgualAZero) {
             return itemPedidoIgualAZero;
         }
+
+
 
         let valorTotal = 0;
 
@@ -125,12 +150,16 @@ class CaixaDaLanchonete {
             valorTotal += this.cardapioDaLanchonete[codigo].valor * parseInt(quantidade);
         }
 
-        const descontoValor = this.desconto(valorTotal, metodoDePagamento);
-        valorTotal -= descontoValor;
 
-        return valorTotal.toFixed(2);
+        if (formaDePagamento === "dinheiro") {
+            valorTotal -= valorTotal * 0.05;
+        } else if (formaDePagamento === "credito") {
+            valorTotal += valorTotal * 0.03
+        }
+        return `R$ ${this.formatarValorMonetario(valorTotal)}`;
+
     }
-}
 
+}
 
 export { CaixaDaLanchonete };
